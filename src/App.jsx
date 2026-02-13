@@ -53,7 +53,7 @@ const createDefaultData = () => ({
 // ============================================================
 // 事件卡片组件
 // ============================================================
-function EventCard({ item, onUpdate, onDelete, onImageUpload }) {
+function EventCard({ item, onUpdate, onDelete, onImageUpload, rewardFontSize }) {
     const fileRef = useRef(null);
 
     return (
@@ -121,7 +121,8 @@ function EventCard({ item, onUpdate, onDelete, onImageUpload }) {
                 </div>
                 {item.reward !== undefined && (
                     <input
-                        className="editable-input text-xs text-orange-600 font-semibold"
+                        className="editable-input text-orange-600 font-semibold"
+                        style={{ fontSize: `${rewardFontSize}px` }}
                         value={item.reward}
                         onChange={(e) => onUpdate({ ...item, reward: e.target.value })}
                         placeholder="奖励（可选）"
@@ -146,7 +147,7 @@ function RedArrow() {
 // ============================================================
 // 单列时间线组件
 // ============================================================
-function TimelineColumn({ column, onUpdateItem, onDeleteItem, onAddItem, onImageUpload }) {
+function TimelineColumn({ column, onUpdateItem, onDeleteItem, onAddItem, onImageUpload, rewardFontSize }) {
     return (
         <div className="flex flex-col items-center flex-1 min-w-[180px]">
             {/* 列标题 */}
@@ -163,6 +164,7 @@ function TimelineColumn({ column, onUpdateItem, onDeleteItem, onAddItem, onImage
                             onUpdate={(updated) => onUpdateItem(column.id, item.id, updated)}
                             onDelete={() => onDeleteItem(column.id, item.id)}
                             onImageUpload={(file) => onImageUpload(column.id, item.id, file)}
+                            rewardFontSize={rewardFontSize}
                         />
                         {idx < column.items.length - 1 && <RedArrow />}
                     </React.Fragment>
@@ -186,6 +188,7 @@ function TimelineColumn({ column, onUpdateItem, onDeleteItem, onAddItem, onImage
 // ============================================================
 export default function App() {
     const [data, setData] = useState(createDefaultData);
+    const [rewardFontSize, setRewardFontSize] = useState(12);
     const exportRef = useRef(null);
     const [exporting, setExporting] = useState(false);
 
@@ -266,7 +269,7 @@ export default function App() {
             exportRef.current.classList.remove('export-target');
 
             const link = document.createElement('a');
-            link.download = '日程表梗图.png';
+            link.download = '日程表.png';
             link.href = dataUrl;
             link.click();
         } catch (err) {
@@ -290,7 +293,7 @@ export default function App() {
             exportRef.current.classList.remove('export-target');
 
             const link = document.createElement('a');
-            link.download = '日程表梗图.svg';
+            link.download = '日程表.svg';
             link.href = dataUrl;
             link.click();
         } catch (err) {
@@ -317,7 +320,21 @@ export default function App() {
                     <Sparkles size={22} className="text-yellow-500 twinkle" />
                     日程表生成器
                 </h1>
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-center">
+                    <div className="flex items-center gap-2 text-sm text-gray-600 bg-white px-3 py-2 rounded-lg border border-gray-300">
+                        <label htmlFor="fontSize" className="whitespace-nowrap">奖励字号:</label>
+                        <select
+                            id="fontSize"
+                            value={rewardFontSize}
+                            onChange={(e) => setRewardFontSize(Number(e.target.value))}
+                            className="border-none outline-none bg-transparent cursor-pointer font-semibold"
+                        >
+                            <option value={10}>小 (10px)</option>
+                            <option value={12}>中 (12px)</option>
+                            <option value={14}>大 (14px)</option>
+                            <option value={16}>特大 (16px)</option>
+                        </select>
+                    </div>
                     <button
                         onClick={resetData}
                         className="px-3 py-2 text-sm rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-gray-600 transition-colors"
@@ -370,6 +387,7 @@ export default function App() {
                                 onDeleteItem={deleteItem}
                                 onAddItem={addItem}
                                 onImageUpload={handleImageUpload}
+                                rewardFontSize={rewardFontSize}
                             />
                         ))}
                     </div>
@@ -382,9 +400,30 @@ export default function App() {
             </div>
 
             {/* 页脚提示 */}
-            <div className="max-w-5xl mx-auto mt-4 text-center text-xs text-gray-400 space-y-1">
+            <div className="max-w-5xl mx-auto mt-4 text-center text-xs text-gray-400 space-y-2">
                 <p>💡 点击图片区域上传头像 · 所有文字均可直接编辑 · 鼠标悬停卡片显示删除按钮</p>
                 <p>导出时控制按钮会自动隐藏，只保留内容</p>
+                
+                {/* GitHub 链接和访问量 */}
+                <div className="flex items-center justify-center gap-3 pt-2">
+                    <a
+                        href="https://github.com/ShulkenH/schedule-generator"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-gray-500 hover:text-gray-700 transition-colors flex items-center gap-1"
+                    >
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd"/>
+                        </svg>
+                        GitHub 项目
+                    </a>
+                    <span className="text-gray-300">|</span>
+                    <img
+                        src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fshulkenh.github.io%2Fschedule-generator&count_bg=%23FF6B6B&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=%E8%AE%BF%E9%97%AE%E9%87%8F&edge_flat=false"
+                        alt="访问量"
+                        className="inline-block"
+                    />
+                </div>
             </div>
         </div>
     );
