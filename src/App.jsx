@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { toPng, toSvg } from 'html-to-image';
 import {
     Download,
@@ -199,21 +199,8 @@ function TimelineColumn({ column, onUpdateItem, onDeleteItem, onAddItem, onImage
 export default function App() {
     const [data, setData] = useState(createDefaultData);
     const [rewardFontSize, setRewardFontSize] = useState(16);
-    const [visitorCount, setVisitorCount] = useState('-');
     const exportRef = useRef(null);
     const [exporting, setExporting] = useState(false);
-
-    // 访问量统计
-    useEffect(() => {
-        fetch('https://api.countapi.xyz/hit/schedule-generator-shulkenh/visits')
-            .then(res => res.json())
-            .then(data => {
-                setVisitorCount(data.value || '-');
-            })
-            .catch(() => {
-                setVisitorCount('无法加载');
-            });
-    }, []);
 
     // 更新标题
     const setTitle = useCallback((title) => {
@@ -426,7 +413,7 @@ export default function App() {
                 <p>💡 点击图片区域上传头像 · 所有文字均可直接编辑 · 鼠标悬停卡片显示删除按钮</p>
                 <p>导出时控制按钮会自动隐藏，只保留内容</p>
 
-                {/* GitHub 链接和访问量 */}
+                {/* GitHub 链接 */}
                 <div className="flex items-center justify-center gap-3 pt-2">
                     <a
                         href="https://github.com/ShulkenH/schedule-generator"
@@ -439,8 +426,6 @@ export default function App() {
                         </svg>
                         GitHub 项目
                     </a>
-                    <span className="text-gray-300">|访问量：</span>
-                    <span className="text-gray-500 font-mono text-sm">{visitorCount}</span>
                 </div>
             </div>
         </div>
