@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { toPng, toSvg } from 'html-to-image';
 import {
     Download,
@@ -112,20 +112,30 @@ function EventCard({ item, onUpdate, onDelete, onImageUpload, rewardFontSize }) 
                         onChange={(e) => onUpdate({ ...item, time: e.target.value })}
                         placeholder="时间"
                     />
-                    <input
-                        className="editable-input text-sm flex-1"
+                    <textarea
+                        className="editable-input editable-textarea text-sm flex-1 resize-none"
                         value={item.action}
                         onChange={(e) => onUpdate({ ...item, action: e.target.value })}
                         placeholder="事件描述"
+                        rows={1}
+                        onInput={(e) => {
+                            e.target.style.height = 'auto';
+                            e.target.style.height = e.target.scrollHeight + 'px';
+                        }}
                     />
                 </div>
                 {item.reward !== undefined && (
-                    <input
-                        className="editable-input text-orange-600 font-semibold"
+                    <textarea
+                        className="editable-input editable-textarea text-orange-600 font-semibold resize-none"
                         style={{ fontSize: `${rewardFontSize}px` }}
                         value={item.reward}
                         onChange={(e) => onUpdate({ ...item, reward: e.target.value })}
                         placeholder="奖励（可选）"
+                        rows={1}
+                        onInput={(e) => {
+                            e.target.style.height = 'auto';
+                            e.target.style.height = e.target.scrollHeight + 'px';
+                        }}
                     />
                 )}
             </div>
@@ -188,9 +198,22 @@ function TimelineColumn({ column, onUpdateItem, onDeleteItem, onAddItem, onImage
 // ============================================================
 export default function App() {
     const [data, setData] = useState(createDefaultData);
-    const [rewardFontSize, setRewardFontSize] = useState(12);
+    const [rewardFontSize, setRewardFontSize] = useState(16);
+    const [visitorCount, setVisitorCount] = useState('-');
     const exportRef = useRef(null);
     const [exporting, setExporting] = useState(false);
+
+    // 访问量统计
+    useEffect(() => {
+        fetch('https://api.countapi.xyz/hit/schedule-generator-shulkenh/visits')
+            .then(res => res.json())
+            .then(data => {
+                setVisitorCount(data.value || '-');
+            })
+            .catch(() => {
+                setVisitorCount('无法加载');
+            });
+    }, []);
 
     // 更新标题
     const setTitle = useCallback((title) => {
@@ -329,9 +352,6 @@ export default function App() {
                             onChange={(e) => setRewardFontSize(Number(e.target.value))}
                             className="border-none outline-none bg-transparent cursor-pointer font-semibold"
                         >
-                            <option value={10}>小 (10px)</option>
-                            <option value={12}>中 (12px)</option>
-                            <option value={14}>大 (14px)</option>
                             <option value={16}>特大 (16px)</option>
                             <option value={18}>超大 (18px)</option>
                             <option value={20}>巨大 (20px)</option>
@@ -419,17 +439,8 @@ export default function App() {
                         </svg>
                         GitHub 项目
                     </a>
-                    <span className="text-gray-300">|</span>
-                    <img
-                        src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fshulkenh.github.io%2Fschedule-generator&count_bg=%23FF6B6B&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=%E8%AE%BF%E9%97%AE%E9%87%8F&edge_flat=false"
-                        alt="访问量"
-                        className="inline-block"
-                        referrerPolicy="no-referrer-when-downgrade"
-                        onError={(e) => {
-                            e.target.style.display = 'none';
-                            e.target.nextSibling && (e.target.previousSibling.style.display = 'none');
-                        }}
-                    />
+                    <span className="text-gray-300">|访问量：</span>
+                    <span className="text-gray-500 font-mono text-sm">{visitorCount}</span>
                 </div>
             </div>
         </div>

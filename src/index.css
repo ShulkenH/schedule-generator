@@ -18,6 +18,13 @@ body {
     transition: background 0.2s;
 }
 
+/* textarea 特殊样式 */
+.editable-textarea {
+    min-height: 1.5em;
+    overflow: hidden;
+    line-height: 1.5;
+}
+
 .editable-input:hover {
     background: rgba(255, 255, 255, 0.5);
     border-radius: 4px;
