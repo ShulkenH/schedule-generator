@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap');
+
+body {
+    font-family: 'Noto Sans SC', sans-serif;
+}
+
+/* 隐藏输入框的默认样式，让其看起来像纯文本 */
+.editable-input {
+    background: transparent;
+    border: none;
+    outline: none;
+    text-align: center;
+    width: 100%;
+    transition: background 0.2s;
+}
+
+.editable-input:hover {
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 4px;
+}
+
+.editable-input:focus {
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 4px;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.3);
+}
+
+/* 卡片的图片上传区域 */
+.image-upload-zone {
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+
+.image-upload-zone:hover {
+    opacity: 0.85;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.4);
+}
+
+.image-upload-zone:hover .upload-overlay {
+    opacity: 1;
+}
+
+.upload-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+}
+
+/* 红色大箭头 */
+.red-arrow {
+    color: #dc2626;
+    filter: drop-shadow(1px 1px 1px rgba(0, 0, 0, 0.15));
+}
+
+/* 导出时隐藏控制按钮 */
+.export-target .control-btn {
+    display: none !important;
+}
+
+.export-target .editable-input {
+    caret-color: transparent;
+}
+
+/* 装饰性星星动画 */
+@keyframes twinkle {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.twinkle {
+    animation: twinkle 2s ease-in-out infinite;
+}
