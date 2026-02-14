@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { toPng, toSvg } from 'html-to-image';
 import {
     Download,
@@ -86,7 +86,7 @@ function EventCard({ item, onUpdate, onDelete, onImageUpload, rewardFontSize }) 
         e.preventDefault();
         e.stopPropagation();
         setIsDragging(false);
-        
+
         const file = e.dataTransfer.files?.[0];
         if (file) {
             handleFile(file);
@@ -106,11 +106,9 @@ function EventCard({ item, onUpdate, onDelete, onImageUpload, rewardFontSize }) 
 
             {/* 图片区域 */}
             <div
-                className={`image-upload-zone rounded-lg border-2 border-dashed ${
-                    isDragging ? 'border-red-500 bg-red-50' : 'border-gray-300'
-                } bg-white flex items-center justify-center ${
-                    item.image ? 'p-1' : 'w-36 h-36 md:w-44 md:h-44'
-                }`}
+                className={`image-upload-zone rounded-lg border-2 border-dashed ${isDragging ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                    } bg-white flex items-center justify-center ${item.image ? 'p-1' : 'w-36 h-36 md:w-44 md:h-44'
+                    }`}
                 style={{ maxWidth: '200px', maxHeight: '200px' }}
                 onClick={() => fileRef.current?.click()}
                 onDragOver={handleDragOver}
@@ -243,10 +241,52 @@ function TimelineColumn({ column, onUpdateItem, onDeleteItem, onAddItem, onImage
 // 主应用
 // ============================================================
 export default function App() {
-    const [data, setData] = useState(createDefaultData);
-    const [rewardFontSize, setRewardFontSize] = useState(18);
+    // 从 localStorage 读取保存的数据，如果没有则使用默认数据
+    const [data, setData] = useState(() => {
+        try {
+            const savedData = localStorage.getItem('schedule-generator-data');
+            if (savedData) {
+                return JSON.parse(savedData);
+            }
+        } catch (error) {
+            console.error('读取缓存数据失败:', error);
+        }
+        return createDefaultData();
+    });
+    
+    // 从 localStorage 读取字号设置
+    const [rewardFontSize, setRewardFontSize] = useState(() => {
+        try {
+            const savedFontSize = localStorage.getItem('schedule-generator-fontsize');
+            if (savedFontSize) {
+                return parseInt(savedFontSize, 10);
+            }
+        } catch (error) {
+            console.error('读取字号缓存失败:', error);
+        }
+        return 18;
+    });
+    
     const exportRef = useRef(null);
     const [exporting, setExporting] = useState(false);
+
+    // 保存数据到 localStorage
+    useEffect(() => {
+        try {
+            localStorage.setItem('schedule-generator-data', JSON.stringify(data));
+        } catch (error) {
+            console.error('保存数据失败:', error);
+        }
+    }, [data]);
+
+    // 保存字号到 localStorage
+    useEffect(() => {
+        try {
+            localStorage.setItem('schedule-generator-fontsize', rewardFontSize.toString());
+        } catch (error) {
+            console.error('保存字号失败:', error);
+        }
+    }, [rewardFontSize]);
 
     // 更新标题
     const setTitle = useCallback((title) => {
@@ -285,12 +325,12 @@ export default function App() {
         // 检查当前列的事件数量
         const currentColumn = data.columns.find(col => col.id === columnId);
         const MAX_ITEMS = 10; // 每列最多10个事件
-        
+
         if (currentColumn && currentColumn.items.length >= MAX_ITEMS) {
             alert(`每列最多只能添加 ${MAX_ITEMS} 个事件！`);
             return;
         }
-        
+
         const newItem = {
             id: `item_${Date.now()}`,
             time: '??:??',
@@ -372,8 +412,17 @@ export default function App() {
 
     // 重置数据
     const resetData = useCallback(() => {
-        if (window.confirm('确定要重置所有内容吗？')) {
+        if (window.confirm('确定要重置所有内容吗？这将清除所有缓存数据。')) {
+            // 清除 localStorage
+            try {
+                localStorage.removeItem('schedule-generator-data');
+                localStorage.removeItem('schedule-generator-fontsize');
+            } catch (error) {
+                console.error('清除缓存失败:', error);
+            }
+            // 重置状态
             setData(createDefaultData());
+            setRewardFontSize(18);
         }
     }, []);
 
