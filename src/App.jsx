@@ -456,11 +456,10 @@ export default function App() {
                     <Sparkles size={22} className="text-yellow-500 twinkle" />
                     日程表生成器
                     {saveStatus && (
-                        <span className={`text-xs px-2 py-1 rounded ${
-                            saveStatus === '已保存' 
-                                ? 'bg-green-100 text-green-600' 
+                        <span className={`text-xs px-2 py-1 rounded ${saveStatus === '已保存'
+                                ? 'bg-green-100 text-green-600'
                                 : 'bg-red-100 text-red-600'
-                        }`}>
+                            }`}>
                             {saveStatus}
                         </span>
                     )}
@@ -539,6 +538,11 @@ export default function App() {
                     {/* 底部装饰 */}
                     <div className="text-center mt-8 text-xs text-gray-400 select-none">
                         ✦ Made with ♥ by 白織 ✦
+                    </div>
+                    
+                    {/* 项目地址 */}
+                    <div className="text-center mt-3 text-xs text-gray-400 select-none">
+                        github.com/ShulkenH/schedule-generator
                     </div>
                 </div>
             </div>
