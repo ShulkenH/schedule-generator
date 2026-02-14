@@ -15,7 +15,7 @@ import {
 // 默认数据 —— 按图片中的日程表初始化
 // ============================================================
 const createDefaultData = () => ({
-    title: '🎀🎀 GAL批的情人节行程（萌萌版）(๑•̀ᴗ•́)و✧',
+    title: '🎀🎀 的情人节行程（萌萌版）(͡•̀ᴗ•́)و✧',
     columns: [
         {
             id: 'morning',
@@ -55,6 +55,43 @@ const createDefaultData = () => ({
 // ============================================================
 function EventCard({ item, onUpdate, onDelete, onImageUpload, rewardFontSize }) {
     const fileRef = useRef(null);
+    const [isDragging, setIsDragging] = React.useState(false);
+
+    // 处理文件上传（通用函数）
+    const handleFile = (file) => {
+        if (file && file.type.startsWith('image/')) {
+            onImageUpload(file);
+        }
+    };
+
+    // 拖拽相关事件处理
+    const handleDragOver = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+    };
+
+    const handleDragEnter = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+    };
+
+    const handleDrop = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+        
+        const file = e.dataTransfer.files?.[0];
+        if (file) {
+            handleFile(file);
+        }
+    };
 
     return (
         <div className="flex flex-col items-center w-full group relative">
@@ -69,10 +106,17 @@ function EventCard({ item, onUpdate, onDelete, onImageUpload, rewardFontSize }) 
 
             {/* 图片区域 */}
             <div
-                className={`image-upload-zone rounded-lg border-2 border-dashed border-gray-300 bg-white flex items-center justify-center ${item.image ? 'p-1' : 'w-36 h-36 md:w-44 md:h-44'
-                    }`}
+                className={`image-upload-zone rounded-lg border-2 border-dashed ${
+                    isDragging ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                } bg-white flex items-center justify-center ${
+                    item.image ? 'p-1' : 'w-36 h-36 md:w-44 md:h-44'
+                }`}
                 style={{ maxWidth: '200px', maxHeight: '200px' }}
                 onClick={() => fileRef.current?.click()}
+                onDragOver={handleDragOver}
+                onDragEnter={handleDragEnter}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
             >
                 {item.image ? (
                     <img
@@ -84,7 +128,9 @@ function EventCard({ item, onUpdate, onDelete, onImageUpload, rewardFontSize }) 
                 ) : (
                     <div className="flex flex-col items-center justify-center text-gray-400">
                         <ImagePlus size={32} />
-                        <span className="text-xs mt-1">点击上传</span>
+                        <span className="text-xs mt-1">
+                            {isDragging ? '松开上传' : '点击或拖拽上传'}
+                        </span>
                     </div>
                 )}
                 <div className="upload-overlay rounded-lg">
@@ -97,7 +143,7 @@ function EventCard({ item, onUpdate, onDelete, onImageUpload, rewardFontSize }) 
                     className="hidden"
                     onChange={(e) => {
                         const file = e.target.files?.[0];
-                        if (file) onImageUpload(file);
+                        if (file) handleFile(file);
                         e.target.value = '';
                     }}
                 />
@@ -198,7 +244,7 @@ function TimelineColumn({ column, onUpdateItem, onDeleteItem, onAddItem, onImage
 // ============================================================
 export default function App() {
     const [data, setData] = useState(createDefaultData);
-    const [rewardFontSize, setRewardFontSize] = useState(16);
+    const [rewardFontSize, setRewardFontSize] = useState(18);
     const exportRef = useRef(null);
     const [exporting, setExporting] = useState(false);
 
@@ -236,6 +282,15 @@ export default function App() {
 
     // 添加 item
     const addItem = useCallback((columnId) => {
+        // 检查当前列的事件数量
+        const currentColumn = data.columns.find(col => col.id === columnId);
+        const MAX_ITEMS = 10; // 每列最多10个事件
+        
+        if (currentColumn && currentColumn.items.length >= MAX_ITEMS) {
+            alert(`每列最多只能添加 ${MAX_ITEMS} 个事件！`);
+            return;
+        }
+        
         const newItem = {
             id: `item_${Date.now()}`,
             time: '??:??',
@@ -249,7 +304,7 @@ export default function App() {
                 col.id === columnId ? { ...col, items: [...col.items, newItem] } : col
             ),
         }));
-    }, []);
+    }, [data.columns]);
 
     // 图片上传
     const handleImageUpload = useCallback((columnId, itemId, file) => {
