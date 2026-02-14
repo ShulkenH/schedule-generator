@@ -240,24 +240,33 @@ function TimelineColumn({ column, onUpdateItem, onDeleteItem, onAddItem, onImage
 // ============================================================
 // 主应用
 // ============================================================
+
+// 缓存键名
+const STORAGE_KEY_DATA = 'schedule-generator-data';
+const STORAGE_KEY_FONTSIZE = 'schedule-generator-fontsize';
+
 export default function App() {
     // 从 localStorage 读取保存的数据，如果没有则使用默认数据
     const [data, setData] = useState(() => {
         try {
-            const savedData = localStorage.getItem('schedule-generator-data');
+            const savedData = localStorage.getItem(STORAGE_KEY_DATA);
+            console.log('读取缓存数据:', savedData ? '找到' : '未找到');
             if (savedData) {
-                return JSON.parse(savedData);
+                const parsed = JSON.parse(savedData);
+                console.log('成功解析缓存数据');
+                return parsed;
             }
         } catch (error) {
             console.error('读取缓存数据失败:', error);
         }
+        console.log('使用默认数据');
         return createDefaultData();
     });
-    
+
     // 从 localStorage 读取字号设置
     const [rewardFontSize, setRewardFontSize] = useState(() => {
         try {
-            const savedFontSize = localStorage.getItem('schedule-generator-fontsize');
+            const savedFontSize = localStorage.getItem(STORAGE_KEY_FONTSIZE);
             if (savedFontSize) {
                 return parseInt(savedFontSize, 10);
             }
@@ -266,23 +275,35 @@ export default function App() {
         }
         return 18;
     });
-    
+
     const exportRef = useRef(null);
     const [exporting, setExporting] = useState(false);
+    const [saveStatus, setSaveStatus] = useState(''); // 保存状态提示
 
     // 保存数据到 localStorage
     useEffect(() => {
         try {
-            localStorage.setItem('schedule-generator-data', JSON.stringify(data));
+            const dataStr = JSON.stringify(data);
+            localStorage.setItem(STORAGE_KEY_DATA, dataStr);
+            console.log('数据已保存到缓存');
+            setSaveStatus('已保存');
+            const timer = setTimeout(() => setSaveStatus(''), 2000);
+            return () => clearTimeout(timer);
         } catch (error) {
             console.error('保存数据失败:', error);
+            setSaveStatus('保存失败');
+            // 可能是存储空间不足或隐私模式
+            if (error.name === 'QuotaExceededError') {
+                alert('存储空间不足，无法保存数据。请清理浏览器缓存或删除一些图片。');
+            }
         }
     }, [data]);
 
     // 保存字号到 localStorage
     useEffect(() => {
         try {
-            localStorage.setItem('schedule-generator-fontsize', rewardFontSize.toString());
+            localStorage.setItem(STORAGE_KEY_FONTSIZE, rewardFontSize.toString());
+            console.log('字号已保存:', rewardFontSize);
         } catch (error) {
             console.error('保存字号失败:', error);
         }
@@ -415,8 +436,9 @@ export default function App() {
         if (window.confirm('确定要重置所有内容吗？这将清除所有缓存数据。')) {
             // 清除 localStorage
             try {
-                localStorage.removeItem('schedule-generator-data');
-                localStorage.removeItem('schedule-generator-fontsize');
+                localStorage.removeItem(STORAGE_KEY_DATA);
+                localStorage.removeItem(STORAGE_KEY_FONTSIZE);
+                console.log('缓存已清除');
             } catch (error) {
                 console.error('清除缓存失败:', error);
             }
@@ -433,6 +455,15 @@ export default function App() {
                 <h1 className="text-xl font-bold text-gray-700 flex items-center gap-2">
                     <Sparkles size={22} className="text-yellow-500 twinkle" />
                     日程表生成器
+                    {saveStatus && (
+                        <span className={`text-xs px-2 py-1 rounded ${
+                            saveStatus === '已保存' 
+                                ? 'bg-green-100 text-green-600' 
+                                : 'bg-red-100 text-red-600'
+                        }`}>
+                            {saveStatus}
+                        </span>
+                    )}
                 </h1>
                 <div className="flex gap-2 items-center">
                     <div className="flex items-center gap-2 text-sm text-gray-600 bg-white px-3 py-2 rounded-lg border border-gray-300">
