@@ -1,5 +1,6 @@
 # 日程表生成器
 
+shulkenh.github.io/schedule-generator/
 一个可自定义的日程表生成器，支持上传图片、编辑文字、导出 PNG/SVG。
 
 ## ✨ 功能
