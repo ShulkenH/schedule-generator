@@ -542,7 +542,7 @@ export default function App() {
                     
                     {/* 项目地址 */}
                     <div className="text-center mt-3 text-xs text-gray-400 select-none">
-                        github.com/ShulkenH/schedule-generator
+                        shulkenh.github.io/schedule-generator
                     </div>
                 </div>
             </div>
